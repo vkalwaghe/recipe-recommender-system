@@ -1,0 +1,260 @@
+import tkinter as tk
+from tkinter import messagebox, ttk
+import urllib.request
+import io
+from PIL import Image, ImageTk
+
+class RestaurantApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("XYZ Restaurant")
+        self.root.geometry("600x400")
+
+        # Fetch the background image from URL
+        self.bg_image_url = "https://thumbs.dreamstime.com/b/luxury-hotel-4480742.jpg"
+        self.load_background_image()
+
+        self.veg_recipe_details = {
+            'veg_manchurian': ['vegetables', 'soy sauce', 'corn flour', 'spices'],
+            'veg_noodles': ['noodles', 'vegetables', 'soy sauce', 'spices'],
+            # Add more vegetarian recipes here
+        }
+
+        # Non-vegetarian recipe details
+        self.non_veg_recipe_details = {
+            'chicken_manchurian': ['chicken', 'soy sauce', 'corn flour', 'spices'],
+            'chicken_noodles': ['noodles', 'chicken', 'soy sauce', 'spices'],
+            # Add more non-vegetarian recipes here
+        }
+
+        self.create_login_page()
+
+    def load_background_image(self):
+        try:
+            # Download the image from URL
+            image_bytes = urllib.request.urlopen(self.bg_image_url).read()
+            # Open the image
+            image_stream = io.BytesIO(image_bytes)
+            img = Image.open(image_stream)
+            img = img.resize((self.root.winfo_screenwidth(), self.root.winfo_screenheight()), Image.LANCZOS)
+
+            # Convert the image to Tkinter format
+            self.bg_image = ImageTk.PhotoImage(img)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load background image: {e}")
+
+    def create_login_page(self):
+        # Create a label with the background image
+        self.bg_label = tk.Label(self.root, image=self.bg_image)
+        self.bg_label.place(relwidth=1, relheight=1)
+
+        self.login_frame = tk.Frame(self.root, bg="white", bd=5)
+        self.login_frame.place(relx=0.5, rely=0.5, relwidth=0.35, relheight=0.35, anchor="center")
+
+        self.choice_label = tk.Label(self.login_frame, text="Welcome to XYZ Restaurant!", bg="white")
+        self.choice_label.grid(row=0, columnspan=2, pady=10)
+
+        self.username_label = tk.Label(self.login_frame, text="Username:", bg="white")
+        self.username_label.grid(row=1, column=0)
+
+        self.username_entry = tk.Entry(self.login_frame)
+        self.username_entry.grid(row=1, column=1)
+
+        self.password_label = tk.Label(self.login_frame, text="Password:", bg="white")
+        self.password_label.grid(row=2, column=0)
+
+        self.password_entry = tk.Entry(self.login_frame, show="*")
+        self.password_entry.grid(row=2, column=1)
+
+        self.login_button = tk.Button(self.login_frame, text="Login", command=self.process_login)
+        self.login_button.grid(row=3, columnspan=2, pady=10)
+
+    def process_login(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+
+        # Check if username and password match
+        if username == "vahi" and password == "vahi@2195":
+            self.login_frame.destroy()
+            self.show_preference_page()
+        else:
+            messagebox.showerror("Login Failed", "Invalid username or password. Please try again.")
+
+    def show_preference_page(self):
+        self.preference_window = tk.Toplevel(self.root)
+        self.preference_window.title("Preference Page")
+
+        # Center the preference window
+        window_width = 300
+        window_height = 200
+        screen_width = self.preference_window.winfo_screenwidth()
+        screen_height = self.preference_window.winfo_screenheight()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        self.preference_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+        self.preference_label = tk.Label(self.preference_window, text="Do you prefer Veg or Non-Veg?", bg="white")
+        self.preference_label.grid(row=0, columnspan=2)
+
+        self.preference_entry = ttk.Combobox(self.preference_window, values=["Veg", "Non-Veg"])
+        self.preference_entry.grid(row=1, columnspan=2, pady=5)
+
+        self.next_button = tk.Button(self.preference_window, text="Next", command=self.process_preference)
+        self.next_button.grid(row=2, columnspan=2, pady=10)
+
+    def process_preference(self):
+        preference = self.preference_entry.get().lower()
+        if preference == "veg":
+            self.show_veg_cuisines()
+        elif preference == "non-veg":
+            self.show_non_veg_cuisines()
+        else:
+            messagebox.showerror("Invalid Preference", "Please enter 'Veg' or 'Non-Veg'.")
+
+    def show_veg_cuisines(self):
+        self.preference_window.destroy()
+
+        self.veg_cuisine_frame = tk.Frame(self.root, bg="white", bd=5)
+        self.veg_cuisine_frame.place(relx=0.5, rely=0.5, relwidth=0.9, relheight=0.7, anchor="center")
+
+        self.cuisine_label = tk.Label(self.veg_cuisine_frame, text="Choose a Cuisine:", bg="white")
+        self.cuisine_label.pack()
+
+        self.selected_cuisine = tk.StringVar()
+        cuisines = ['Chinese', 'Italian', 'Punjabi']  # Add all cuisines
+        for cuisine in cuisines:
+            tk.Radiobutton(self.veg_cuisine_frame, text=cuisine, variable=self.selected_cuisine, value=cuisine, bg="white").pack(anchor=tk.W)
+
+        self.next_button = tk.Button(self.veg_cuisine_frame, text="Next", command=self.show_veg_restrictions)
+        self.next_button.pack()
+
+    def show_veg_restrictions(self):
+        self.veg_cuisine_frame.destroy()
+
+        self.veg_restriction_frame = tk.Frame(self.root, bg="white", bd=5)
+        self.veg_restriction_frame.place(relx=0.5, rely=0.5, relwidth=0.9, relheight=0.7, anchor="center")
+
+        self.restriction_label = tk.Label(self.veg_restriction_frame, text="Do you have any diet restrictions?", bg="white")
+        self.restriction_label.pack()
+
+        self.selected_restriction = tk.StringVar()
+        restrictions = [("None", "none"), ("Diabetes", "diabetes"), ("Asthma", "asthma"),
+                        ("Thyroid", "thyroid"), ("Blood Pressure", "blood_pressure")]
+        for text, restriction in restrictions:
+            tk.Radiobutton(self.veg_restriction_frame, text=text, variable=self.selected_restriction, value=restriction, bg="white").pack(anchor=tk.W)
+
+        self.next_button = tk.Button(self.veg_restriction_frame, text="Next", command=self.process_veg_choice)
+        self.next_button.pack()
+
+    def process_veg_choice(self):
+        restriction = self.selected_restriction.get()
+        if restriction == "none":
+            self.display_veg_recipes(self.veg_recipe_details.keys())
+        else:
+            recommended_recipes = self.get_recommended_veg_recipes(restriction)
+            self.display_veg_recipes(recommended_recipes)
+
+    def show_non_veg_cuisines(self):
+        self.preference_window.destroy()
+
+        self.non_veg_cuisine_frame = tk.Frame(self.root, bg="white", bd=5)
+        self.non_veg_cuisine_frame.place(relx=0.5, rely=0.5, relwidth=0.9, relheight=0.7, anchor="center")
+
+        self.cuisine_label = tk.Label(self.non_veg_cuisine_frame, text="Choose a Cuisine:", bg="white")
+        self.cuisine_label.pack()
+
+        self.selected_cuisine = tk.StringVar()
+        cuisines = ['Chinese', 'Italian', 'Punjabi']  # Add all cuisines
+        for cuisine in cuisines:
+            tk.Radiobutton(self.non_veg_cuisine_frame, text=cuisine, variable=self.selected_cuisine, value=cuisine, bg="white").pack(anchor=tk.W)
+
+        self.next_button = tk.Button(self.non_veg_cuisine_frame, text="Next", command=self.show_non_veg_restrictions)
+        self.next_button.pack()
+
+    def show_non_veg_restrictions(self):
+        self.non_veg_cuisine_frame.destroy()
+
+        self.non_veg_restriction_frame = tk.Frame(self.root, bg="white", bd=5)
+        self.non_veg_restriction_frame.place(relx=0.5, rely=0.5, relwidth=0.9, relheight=0.7, anchor="center")
+
+        self.restriction_label = tk.Label(self.non_veg_restriction_frame, text="Do you have any diet restrictions?", bg="white")
+        self.restriction_label.pack()
+
+        self.selected_restriction = tk.StringVar()
+        restrictions = [("None", "none"), ("Diabetes", "diabetes"), ("Asthma", "asthma"),
+                        ("Thyroid", "thyroid"), ("Blood Pressure", "blood_pressure")]
+        for text, restriction in restrictions:
+            tk.Radiobutton(self.non_veg_restriction_frame, text=text, variable=self.selected_restriction, value=restriction, bg="white").pack(anchor=tk.W)
+
+        self.next_button = tk.Button(self.non_veg_restriction_frame, text="Next", command=self.process_non_veg_choice)
+        self.next_button.pack()
+
+    def process_non_veg_choice(self):
+        restriction = self.selected_restriction.get()
+        if restriction == "none":
+            self.display_non_veg_recipes(self.non_veg_recipe_details.keys())
+        else:
+            recommended_recipes = self.get_recommended_non_veg_recipes(restriction)
+            self.display_non_veg_recipes(recommended_recipes)
+
+    def get_recommended_veg_recipes(self, restriction):
+        # Logic to fetch recommended vegetarian recipes based on restriction
+        recommended_recipes = []
+        for recipe, details in self.veg_recipe_details.items():
+            if restriction in details:
+                recommended_recipes.append(recipe)
+        return recommended_recipes
+
+    def get_recommended_non_veg_recipes(self, restriction):
+        # Logic to fetch recommended non-vegetarian recipes based on restriction
+        recommended_recipes = []
+        for recipe, details in self.non_veg_recipe_details.items():
+            if restriction in details:
+                recommended_recipes.append(recipe)
+        return recommended_recipes
+
+    def display_veg_recipes(self, recipes):
+        # Logic to display vegetarian recipes
+        # Example:
+        self.show_recipes(recipes, "Vegetarian")
+
+    def display_non_veg_recipes(self, recipes):
+        # Logic to display non-vegetarian recipes
+        # Example:
+        self.show_recipes(recipes, "Non-Vegetarian")
+
+    def show_recipes(self, recipes, cuisine_type):
+        if not recipes:
+            messagebox.showinfo("No Recipes Found", f"No {cuisine_type} recipes found for your dietary restrictions.")
+        else:
+            messagebox.showinfo(f"{cuisine_type} Recipes", f"Recommended {cuisine_type} Recipes: {', '.join(recipes)}")
+            self.show_rating_window()
+
+    def show_rating_window(self):
+        rating_window = tk.Toplevel(self.root)
+        rating_window.title("Rate Our System")
+        rating_window.geometry("300x200")
+
+        rating_label = tk.Label(rating_window, text="Rate our system out of 5 stars:")
+        rating_label.pack()
+
+        # Create a scale for rating
+        rating_scale = tk.Scale(rating_window, from_=1, to=5, orient=tk.HORIZONTAL)
+        rating_scale.pack()
+
+        def submit_rating():
+            rating = rating_scale.get()
+            # You can do something with the rating value, like sending it to a database
+            messagebox.showinfo("Thank You", "Thank you for rating our system!")
+            rating_window.destroy()
+
+        submit_button = tk.Button(rating_window, text="Submit", command=submit_rating)
+        submit_button.pack()
+
+        
+# Main function
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = RestaurantApp(root)
+    root.mainloop()
+
